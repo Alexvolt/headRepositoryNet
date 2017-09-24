@@ -13,6 +13,7 @@ namespace HeadRepositoryNet.Models
         [Required]
         public string Username { get; set; }
 
+        //[NotMappedAttribute]
         [Required]
         [JsonIgnore]
         public string Password { get; set; }
@@ -26,7 +27,7 @@ namespace HeadRepositoryNet.Models
         [Required]
         public string Email { get; set; }
 
-        public string Admin { get; set; }
+        public bool Admin { get; set; }
 
         public string HaveAccess { get; set; }
     }

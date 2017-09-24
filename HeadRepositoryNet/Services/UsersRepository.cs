@@ -8,6 +8,7 @@ using System.Data;
 using System.Threading.Tasks;
 using Dapper.FastCrud;
 using HeadRepositoryNet.Helpers;
+using System.Linq;
 
 namespace HeadRepositoryNet.Services
 {
@@ -27,21 +28,34 @@ namespace HeadRepositoryNet.Services
             }
         }
 
-        public async Task<IEnumerable<User>> FindAllAsync(Dictionary<string, string> queryParams)
+        public async Task<IEnumerable<User>> FindAsync(Dictionary<string, string> queryParams)
         {
             using (IDbConnection dbConnection = Connection)
             {
                 dbConnection.Open();
-                //string query = "select \"Id\", \"Username\", \"FirstName\", \"LastName\", \"Email\", \"Admin\", \"HaveAccess\" from \"Users\"" + QueryHelper<User>.QueryOptions(queryParams);
-                string query1 = QueryHelper<User>.BuildSelectQuery(queryParams);
-                return await dbConnection.QueryAsync<User>(query1);
-                
-                /*return await dbConnection.FindAsync<User>();*/
-
-                //.QueryAsync<User>("SELECT * FROM users");
+                if (queryParams.Count > 0)
+                {
+                    string query = QueryHelper<User>.BuildSelectQuery(queryParams);
+                    return await dbConnection.QueryAsync<User>(query);
+                } 
+                else
+                {
+                    return await dbConnection.FindAsync<User>();
+                }
             }
         }
 
+        public async Task<User> GetByName(string userName)
+        {
+            using (IDbConnection dbConnection = Connection)
+            {
+                dbConnection.Open();
+
+                var users = await dbConnection.QueryAsync<User>("select * from User where Username = @Username", new { Username = userName }).FirstOrDefault();
+                return users.FirstOrDefault();
+            }
+        }
+    
 /*
         public async Task<IActionResult> GetById(long id)
         {

@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using HeadRepositoryNet.Entities;
 using Dapper.FastCrud;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HeadRepositoryNet
 {
@@ -26,7 +28,33 @@ namespace HeadRepositoryNet
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DataAccessOptions>(Configuration.GetSection("dataAccessOptions"));
+            services.Configure<AuthOptions>(Configuration.GetSection("authOptions"));
             OrmConfiguration.DefaultDialect = SqlDialect.PostgreSql;
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.RequireHttpsMetadata = false;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            // укзывает, будет ли валидироваться издатель при валидации токена
+                            ValidateIssuer = true,
+                            // строка, представляющая издателя
+                            ValidIssuer = AuthOptions.Issuer,
+ 
+                            // будет ли валидироваться потребитель токена
+                            ValidateAudience = true,
+                            // установка потребителя токена
+                            ValidAudience = AuthOptions.Audience,
+                            // будет ли валидироваться время существования
+                            ValidateLifetime = true,
+ 
+                            // установка ключа безопасности
+                            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(AuthOptions.KeyAccess),
+                            // валидация ключа безопасности
+                            ValidateIssuerSigningKey = true,
+                        };
+                    });
 
             services.AddMvc();
         }
@@ -35,11 +63,12 @@ namespace HeadRepositoryNet
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
 
-
+            /*
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage(); 
-            }
+            }*/
+            app.UseAuthentication();
 
             app.UseMvc();
         }
