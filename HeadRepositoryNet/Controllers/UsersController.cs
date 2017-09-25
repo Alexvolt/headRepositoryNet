@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using HeadRepositoryNet.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HeadRepositoryNet.Controllers
 {
@@ -28,98 +30,170 @@ namespace HeadRepositoryNet.Controllers
         }
 
         //post api/users/authenticate
-        [HttpPost("/authenticate")]
+        [HttpPost("authenticate")]
         public async Task Authenticate([FromBody] UserPass userPass)
         {
-            var authenticateService = new AuthenticateService(usersRepository);
-            AuthResponse responseData = await authenticateService.Authenticate(userPass);
- 
-            if (responseData == null)
+            if (userPass == null)
             {
                 Response.StatusCode = 400;
-                await Response.WriteAsync("Invalid username or password.");
+                await Response.WriteAsync("invalid input data");
                 return;
             }
 
-            // сериализация ответа
-            Response.ContentType = "application/json";
-            await Response.WriteAsync(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings { Formatting = Formatting.Indented }));
+            try
+            {
+                var authenticateService = new AuthenticateService(usersRepository);
+                AuthResponse responseData = await authenticateService.Authenticate(userPass);
+    
+                if (responseData == null)
+                {
+                    Response.StatusCode = 400;
+                    await Response.WriteAsync("Invalid username or password.");
+                    return;
+                }
+
+                // сериализация ответа
+                Response.ContentType = "application/json";
+                await Response.WriteAsync(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings { Formatting = Formatting.Indented }));
+                
+            }
+            catch (System.Exception  err)
+            {
+                    Response.StatusCode = 500;
+                    await Response.WriteAsync(err.Message);
+                    return;
+            }
         }
 
-        [HttpPost("/accessToken")]
-        public async Task GetAccessToken([FromBody] UserPass userPass)
+        [HttpPost("accessToken")]
+        public async Task<IActionResult> GetAccessToken([FromBody] AuthResponse authData)
         {
-            /* 
-                // get auth token data
-            let decoded = {}
-            try {
-                decoded = jwt.verify(req.body.tokenAuth, config.secretAuth);
-            } catch (err) {
-                res.status(401).send(errorService.userErrorForSending('You need to login again'));
-                return;
+            if (authData == null)
+            {
+                return BadRequest();
             }
+            string refreshToken = authData.RefreshToken;
 
-            // get user data 
-            userService.getById(decoded.sub)
-                .then((user) => {
-                    if (user.haveAccess) {
-                        // user haveAccess - send new access token
-                        let tokenAccess = userService.getAccessToken(user.id, user.admin);
-                        res.send({ tokenAccess: tokenAccess });
-                    } else
-                        res.status(403).send(errorService.userErrorForSending('access denied by admin'));
-                })
-                .catch(function (err) {
-                    res.status(400).send(errorService.errorForSending(err));
-                });*/
+            var claimsPrincipal = JWTTokens.ValidateToken(refreshToken, AuthOptions.KeyRefresh);
+            if (claimsPrincipal == null)
+            {
+                return StatusCode(401,"You need to login again");
+            }
+            else
+            {
+                var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(claimsPrincipal);
+                
+                // get user data from db
+                var user = await usersRepository.GetById(userFromToken.Id);
+                if (user.HaveAccess)
+                {
+                    var claimsIdentity = JWTTokens.GetClaimsIdentity(user);
+                    // Create jwt token for access
+                    // And one more for access token refrashing
+                    var now = DateTime.UtcNow;
+                    var accessToken = JWTTokens.GetToken(claimsIdentity, now, AuthOptions.LifetimeAccess, AuthOptions.KeyAccess);
+                    return new ObjectResult(new { AccessToken = accessToken });
+                }
+                else
+                    return StatusCode(403,"Access denied by admin");
+            }
+       }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] User user)
+        {
+            try
+            {
+                await usersRepository.Create(user);
+                return Ok();
+            }
+            catch (System.Exception err)
+            {
+                
+                return StatusCode(500,err.Message);
+            }
         }
-
         
-
-        /* 
-        router.post('/accessToken', getAccessToken);
-router.post('/register', register);
-router.get('/', getAll);
-router.get('/current', getCurrent);
-router.get('/:_id', getById);
-router.put('/updatePassword/currentUser', updatePasswordCurrentUser);
-router.put('/updatePassword/:_id', updatePassword);
-router.put('/:_id', update);
-router.delete('/:_id', _delete);
-
-        */
-
         // GET api/users
+        [Authorize]
         [HttpGet]
-        public async Task<IEnumerable<User>> Get([FromQuery]Dictionary<string, string> queryParams)
+        public async Task<IEnumerable<User>> GetAll([FromQuery] Dictionary<string, string> queryParams)
         {
             return await usersRepository.FindAsync(queryParams);
         }
+        
+        // GET api/users/current
+        [Authorize]
+        [HttpGet("current")]
+        public async Task<User> GetCurrent()
+        {
+            var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
+            return await usersRepository.GetById(userFromToken.Id);
+        }
 
-        // GET api/values/5
+        // GET api/users/5
+        [Authorize]
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<User> GetById(int id)
         {
-            return "value";
+            return await usersRepository.GetById(id);
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5
+        // PUT api/users/5
+        [Authorize]
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public async Task Put(int id, [FromBody]User user)
         {
+            var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
+            await usersRepository.Update(user, userFromToken.Admin);
         }
 
-        // DELETE api/values/5
+        // DELETE api/users/5
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            await usersRepository.Delete(id);
+        }
+        
+
+        public class PassChangeParams
+        {
+            public string OldPassword { get; set; }
+            public string Password { get; set; }
+        }
+
+        // PUT api/users/updatePassword/currentUser
+        [Authorize]
+        [HttpPut("updatePassword/currentUser")]
+        public async Task<IActionResult> UpdatePasswordCurrentUser([FromBody] PassChangeParams passParams)
+        {
+            
+            if (String.IsNullOrEmpty(passParams.OldPassword) || String.IsNullOrEmpty(passParams.Password) )
+            {
+                return StatusCode(500);
+            }
+            var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
+            var user = await usersRepository.GetById(userFromToken.Id);
+            if (Password.EqualPassword(passParams.OldPassword, user.Password))
+            {
+                await usersRepository.UpdatePassword(userFromToken.Id, passParams.Password);
+                return Ok();                
+            }
+            return StatusCode(403, "Old password is incorrect");            
+        }
+
+        // PUT api/users/updatePassword/5
+        [Authorize(Roles = "admin")]
+        [HttpPut("updatePassword/{id}")]
+        public async Task<IActionResult> UpdatePassword(int id, [FromBody] User user)
+        {            
+            if (String.IsNullOrEmpty(user.Password) )
+            {
+                return StatusCode(500);
+            }
+            await usersRepository.UpdatePassword(id, user.Password);
+            return Ok();                
         }
     }
 }

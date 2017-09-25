@@ -12,6 +12,7 @@ using HeadRepositoryNet.Entities;
 using Dapper.FastCrud;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.IO;
 
 namespace HeadRepositoryNet
 {
@@ -28,8 +29,10 @@ namespace HeadRepositoryNet
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DataAccessOptions>(Configuration.GetSection("dataAccessOptions"));
-            services.Configure<AuthOptions>(Configuration.GetSection("authOptions"));
+            //services.Configure<AuthOptions>(Configuration.GetSection("authOptions"));
             OrmConfiguration.DefaultDialect = SqlDialect.PostgreSql;
+            
+            InitAuthOptions();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
@@ -71,6 +74,21 @@ namespace HeadRepositoryNet
             app.UseAuthentication();
 
             app.UseMvc();
+        }
+
+        private void InitAuthOptions()
+        {            
+            var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json");
+
+            var conf = builder.Build();
+            AuthOptions.Issuer = conf["authOptions:issuer"];
+            AuthOptions.Audience = conf["authOptions:audience"];
+            AuthOptions.KeyRefresh = conf["authOptions:keyRefresh"];
+            AuthOptions.KeyAccess = conf["authOptions:keyAccess"];
+            AuthOptions.LifetimeAccess = Convert.ToInt32(conf["authOptions:lifetimeAccess"]);
+            AuthOptions.LifetimeRefresh = Convert.ToInt32(conf["authOptions:lifetimeRefresh"]);
         }
     }
 }

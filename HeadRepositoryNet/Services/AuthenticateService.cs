@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HeadRepositoryNet.Controllers;
 using HeadRepositoryNet.Entities;
+using HeadRepositoryNet.Helpers;
 using HeadRepositoryNet.Models;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -47,13 +48,13 @@ namespace HeadRepositoryNet.Services
                     return null;
                 }
                 
-                var claimsIdentity = GetClaimsIdentity(user);
+                var claimsIdentity = JWTTokens.GetClaimsIdentity(user);
 
                 // Create jwt token for access
                 // And one more for access token refrashing
                 var now = DateTime.UtcNow;
-                var accessToken = GetToken(claimsIdentity, now, AuthOptions.LifetimeAccess, AuthOptions.KeyAccess);
-                var refreshToken = GetToken(claimsIdentity, now, AuthOptions.LifetimeRefresh, AuthOptions.KeyRefresh);
+                var accessToken = JWTTokens.GetToken(claimsIdentity, now, AuthOptions.LifetimeAccess, AuthOptions.KeyAccess);
+                var refreshToken = JWTTokens.GetToken(claimsIdentity, now, AuthOptions.LifetimeRefresh, AuthOptions.KeyRefresh);
 
                 // answer
                 return new AuthResponse
@@ -66,30 +67,6 @@ namespace HeadRepositoryNet.Services
             }
             return null;
         }
-
-        private string GetToken(ClaimsIdentity claimsIdentity, DateTime begin, int lifetimeMinutes, string key)
-        {
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.Issuer,
-                    audience: AuthOptions.Audience,
-                    notBefore: begin,
-                    claims: claimsIdentity.Claims,
-                    expires: begin.Add(TimeSpan.FromMinutes(lifetimeMinutes)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
-        }
-
-        private ClaimsIdentity GetClaimsIdentity(User user)
-        {
-            var claims = new List<Claim>
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, JsonConvert.SerializeObject(new {sub = user.Id, admin = user.Admin})),
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Admin ? "Admin" : "Default")
-                };
-            return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-        }
-
     }
 }
     

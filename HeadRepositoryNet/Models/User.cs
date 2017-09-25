@@ -29,6 +29,6 @@ namespace HeadRepositoryNet.Models
 
         public bool Admin { get; set; }
 
-        public string HaveAccess { get; set; }
+        public bool HaveAccess { get; set; }
     }
 }
