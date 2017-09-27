@@ -43,7 +43,7 @@ namespace HeadRepositoryNet.Services
             User user = await _usersRepository.GetByName(username);
             if (user != null)
             {
-                if (Password.EqualPassword(password, user.Password))
+                if (!Password.EqualPassword(password, user.Password))
                 {
                     return null;
                 }

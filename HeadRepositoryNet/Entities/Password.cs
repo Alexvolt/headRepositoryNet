@@ -43,6 +43,8 @@ namespace HeadRepositoryNet.Entities
 
         public static bool EqualPassword(string password, string hashFull)
         {
+            if (hashFull.Length < SaltLength)
+                return false;
             string salt = hashFull.Substring(0,SaltLength);
             var pass2 = new Password(password, salt);
             return pass2.HashFull == hashFull;

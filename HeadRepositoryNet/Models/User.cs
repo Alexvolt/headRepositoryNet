@@ -16,7 +16,13 @@ namespace HeadRepositoryNet.Models
         //[NotMappedAttribute]
         [Required]
         [JsonIgnore]
-        public string Password { get; set; }
+        public string Password { get ; set; }
+
+        [JsonProperty("Password")]
+        private string PasswordAlternateSetter
+        {
+            set { Password = value; }
+        }
 
         [Required]
         public string FirstName { get; set; }

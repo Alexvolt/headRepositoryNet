@@ -52,7 +52,7 @@ namespace HeadRepositoryNet.Services
             {
                 dbConnection.Open();
 
-                var users = await dbConnection.QueryAsync<User>("select * from User where Username = @Username", new { Username = userName });
+                var users = await dbConnection.QueryAsync<User>("select * from \"Users\" where \"Username\" = @Username", new { Username = userName });
                 return users.FirstOrDefault();
              }
         }
@@ -82,7 +82,7 @@ namespace HeadRepositoryNet.Services
                 using (IDbConnection dbConnection = Connection)
                 {
                     dbConnection.Open();
-                    var existUsers = await dbConnection.QueryAsync<User>("select Id from User where admin = true");
+                    var existUsers = await dbConnection.QueryAsync<User>("select \"Id\" from \"Users\" where \"Admin\" = true");
                     var existUser = existUsers.FirstOrDefault();
                     bool admin = userParam.Admin || existUser == null;
                     userParam.Admin = admin;
@@ -105,7 +105,7 @@ namespace HeadRepositoryNet.Services
             {
                 dbConnection.Open();
                 string addUpdate = isAdmin ? ", Admin = @Admin, HaveAccess = @HaveAccess" : "";
-                var count = await dbConnection.ExecuteAsync($"update User set Username = @Username, FirstName = @FirstName, LastName = @LastName, Email = @Email {addUpdate} where Id = @Id", user);
+                var count = await dbConnection.ExecuteAsync($"update \"Users\" set \"Username\" = @Username, \"FirstName\" = @FirstName, \"LastName\" = @LastName, \"Email\" = @Email {addUpdate} where \"Id\" = @Id", user);
             }
         }
 
@@ -115,71 +115,11 @@ namespace HeadRepositoryNet.Services
             {
                 dbConnection.Open();
                 Password pass = new Password(password);
-                var count = await dbConnection.ExecuteAsync($"update User set Password = @Password where Id = @Id", new { Id = id , Password = pass.HashFull});
+                var count = await dbConnection.ExecuteAsync($"update \"Users\" set \"Password\" = @Password where \"Id\" = @Id", new { Id = id , Password = pass.HashFull});
             }
         }
 
     
-/*
-        public async Task<IActionResult> GetById(long id)
-        {
-            var item = _context.TodoItems.FirstOrDefault(t => t.Id == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            return new ObjectResult(item);
-        }
-
-        public IActionResult Create([FromBody] TodoItem item)
-        {
-            if (item == null)
-            {
-                return BadRequest();
-            }
-
-            _context.TodoItems.Add(item);
-            _context.SaveChanges();
-
-            return CreatedAtRoute("GetTodo", new { id = item.Id }, item);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Update(long id, [FromBody] TodoItem item)
-        {
-            if (item == null || item.Id != id)
-            {
-                return BadRequest();
-            }
-
-            var todo = _context.TodoItems.FirstOrDefault(t => t.Id == id);
-            if (todo == null)
-            {
-                return NotFound();
-            }
-
-            todo.IsComplete = item.IsComplete;
-            todo.Name = item.Name;
-
-            _context.TodoItems.Update(todo);
-            _context.SaveChanges();
-            return new NoContentResult();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(long id)
-        {
-            var todo = _context.TodoItems.FirstOrDefault(t => t.Id == id);
-            if (todo == null)
-            {
-                return NotFound();
-            }
-
-            _context.TodoItems.Remove(todo);
-            _context.SaveChanges();
-            return new NoContentResult();
-        }*/
-
 
     }
 }

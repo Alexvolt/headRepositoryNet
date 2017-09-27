@@ -33,7 +33,7 @@ namespace HeadRepositoryNet.Controllers
         [HttpPost("authenticate")]
         public async Task Authenticate([FromBody] UserPass userPass)
         {
-            if (userPass == null)
+            if (userPass.Password == null || userPass.Username == null)
             {
                 Response.StatusCode = 400;
                 await Response.WriteAsync("invalid input data");
@@ -65,14 +65,19 @@ namespace HeadRepositoryNet.Controllers
             }
         }
 
-        [HttpPost("accessToken")]
-        public async Task<IActionResult> GetAccessToken([FromBody] AuthResponse authData)
+        public class AccessTokenReq
         {
-            if (authData == null)
+            public string RefreshToken { get; set; }
+        }
+
+        [HttpPost("accessToken")]
+        public async Task<IActionResult> GetAccessToken([FromBody] AccessTokenReq accessTokenReq)
+        {
+            if (accessTokenReq.RefreshToken is null)
             {
                 return BadRequest();
             }
-            string refreshToken = authData.RefreshToken;
+            string refreshToken = accessTokenReq.RefreshToken;
 
             var claimsPrincipal = JWTTokens.ValidateToken(refreshToken, AuthOptions.KeyRefresh);
             if (claimsPrincipal == null)
@@ -186,13 +191,13 @@ namespace HeadRepositoryNet.Controllers
         // PUT api/users/updatePassword/5
         [Authorize(Roles = "admin")]
         [HttpPut("updatePassword/{id}")]
-        public async Task<IActionResult> UpdatePassword(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdatePassword(int id, [FromBody] PassChangeParams passParams)
         {            
-            if (String.IsNullOrEmpty(user.Password) )
+            if (String.IsNullOrEmpty(passParams.Password) )
             {
                 return StatusCode(500);
             }
-            await usersRepository.UpdatePassword(id, user.Password);
+            await usersRepository.UpdatePassword(id, passParams.Password);
             return Ok();                
         }
     }
