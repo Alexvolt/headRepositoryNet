@@ -44,13 +44,6 @@ namespace HeadRepositoryNet.Controllers
             {
                 var authenticateService = new AuthenticateService(usersRepository);
                 AuthResponse responseData = await authenticateService.Authenticate(userPass);
-    
-                if (responseData == null)
-                {
-                    Response.StatusCode = 400;
-                    await Response.WriteAsync("Invalid username or password.");
-                    return;
-                }
 
                 // сериализация ответа
                 Response.ContentType = "application/json";
@@ -59,7 +52,7 @@ namespace HeadRepositoryNet.Controllers
             }
             catch (System.Exception  err)
             {
-                    Response.StatusCode = 500;
+                    Response.StatusCode = 403;
                     await Response.WriteAsync(err.Message);
                     return;
             }
@@ -72,35 +65,45 @@ namespace HeadRepositoryNet.Controllers
 
         [HttpPost("accessToken")]
         public async Task<IActionResult> GetAccessToken([FromBody] AccessTokenReq accessTokenReq)
-        {
-            if (accessTokenReq.RefreshToken is null)
+        {            
+            try
             {
-                return BadRequest();
-            }
-            string refreshToken = accessTokenReq.RefreshToken;
-
-            var claimsPrincipal = JWTTokens.ValidateToken(refreshToken, AuthOptions.KeyRefresh);
-            if (claimsPrincipal == null)
-            {
-                return StatusCode(401,"You need to login again");
-            }
-            else
-            {
-                var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(claimsPrincipal);
-                
-                // get user data from db
-                var user = await usersRepository.GetById(userFromToken.Id);
-                if (user.HaveAccess)
+                if (accessTokenReq.RefreshToken is null)
                 {
-                    var claimsIdentity = JWTTokens.GetClaimsIdentity(user);
-                    // Create jwt token for access
-                    // And one more for access token refrashing
-                    var now = DateTime.UtcNow;
-                    var accessToken = JWTTokens.GetToken(claimsIdentity, now, AuthOptions.LifetimeAccess, AuthOptions.KeyAccess);
-                    return new ObjectResult(new { AccessToken = accessToken });
+                    return BadRequest();
+                }
+                string refreshToken = accessTokenReq.RefreshToken;
+
+                var claimsPrincipal = JWTTokens.ValidateToken(refreshToken, AuthOptions.KeyRefresh);
+                if (claimsPrincipal == null)
+                {
+                    return StatusCode(401,"You need to login again");
                 }
                 else
-                    return StatusCode(403,"Access denied by admin");
+                {
+                    var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(claimsPrincipal);
+                    
+                    // get user data from db
+                    var user = await usersRepository.GetById(userFromToken.Id);
+                    if(user == null)
+                        return StatusCode(400,"User not exists");
+                    if (user.HaveAccess)
+                    {
+                        var claimsIdentity = JWTTokens.GetClaimsIdentity(user);
+                        // Create jwt token for access
+                        // And one more for access token refrashing
+                        var now = DateTime.UtcNow;
+                        var accessToken = JWTTokens.GetToken(claimsIdentity, now, AuthOptions.LifetimeAccess, AuthOptions.KeyAccess);
+                        return new ObjectResult(new { AccessToken = accessToken });
+                    }
+                    else
+                        return StatusCode(403,"Access denied by admin");
+                }
+                    
+            }
+            catch (System.Exception err)
+            {
+                return StatusCode(500,err.Message);
             }
        }
 
@@ -120,7 +123,7 @@ namespace HeadRepositoryNet.Controllers
         }
         
         // GET api/users
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IEnumerable<User>> GetAll([FromQuery] Dictionary<string, string> queryParams)
         {
@@ -149,12 +152,20 @@ namespace HeadRepositoryNet.Controllers
         [HttpPut("{id}")]
         public async Task Put(int id, [FromBody]User user)
         {
-            var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
-            await usersRepository.Update(user, userFromToken.Admin);
+            try
+            {
+                var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
+                await usersRepository.Update(user, userFromToken.Admin);                
+            }
+            catch (System.Exception err)
+            {
+                Response.StatusCode = 500;
+                await Response.WriteAsync(err.Message);
+            }
         }
 
         // DELETE api/users/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task Delete(int id)
         {
@@ -180,7 +191,7 @@ namespace HeadRepositoryNet.Controllers
             }
             var userFromToken = JWTTokens.GetDataFromClaimsPrincipal(HttpContext.User);
             var user = await usersRepository.GetById(userFromToken.Id);
-            if (Password.EqualPassword(passParams.OldPassword, user.Password))
+            if (BCrypt.Net.BCrypt.Verify(passParams.OldPassword, user.Password))
             {
                 await usersRepository.UpdatePassword(userFromToken.Id, passParams.Password);
                 return Ok();                
@@ -189,7 +200,7 @@ namespace HeadRepositoryNet.Controllers
         }
 
         // PUT api/users/updatePassword/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("updatePassword/{id}")]
         public async Task<IActionResult> UpdatePassword(int id, [FromBody] PassChangeParams passParams)
         {            

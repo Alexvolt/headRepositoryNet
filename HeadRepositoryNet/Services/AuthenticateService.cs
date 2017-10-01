@@ -42,8 +42,12 @@ namespace HeadRepositoryNet.Services
             // find user, check password, get claimes
             User user = await _usersRepository.GetByName(username);
             if (user != null)
-            {
-                if (!Password.EqualPassword(password, user.Password))
+            {   
+                if (!user.HaveAccess)
+                {
+                    throw new ApplicationException("Access denied by admin");
+                }            
+                if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
                 {
                     return null;
                 }
@@ -65,7 +69,7 @@ namespace HeadRepositoryNet.Services
                 };
 
             }
-            return null;
+            throw new ApplicationException("Invalid username or password.");
         }
     }
 }

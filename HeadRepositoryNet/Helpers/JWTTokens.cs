@@ -29,7 +29,7 @@ namespace HeadRepositoryNet.Helpers
         {
             var claims = new List<Claim>
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, JsonConvert.SerializeObject(new {sub = user.Id, admin = user.Admin})),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username),
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Admin ? "Admin" : "Default")
                 };
@@ -64,8 +64,7 @@ namespace HeadRepositoryNet.Helpers
                 {
                     Id = Convert.ToInt32(GetClimeValueIfExists(climesP, SUBCLIMENAME)),
                     Username = GetClimeValueIfExists(climesP, ClaimsIdentity.DefaultNameClaimType),
-                    Admin = Convert.ToBoolean(GetClimeValueIfExists(climesP, "admin")),
-                    LastName = GetClimeValueIfExists(climesP, "lastname")
+                    Admin = GetClimeValueIfExists(climesP, ClaimsIdentity.DefaultRoleClaimType) == "Admin" ? true : false
                 };
         }
 

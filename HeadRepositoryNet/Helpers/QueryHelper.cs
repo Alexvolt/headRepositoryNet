@@ -52,14 +52,17 @@ namespace HeadRepositoryNet.Helpers
             return orderBy + limit + offset;
         }
 
-        private static string ConcatIfNumber(string thirst, string second)
+        private static string ConcatIfNumber(
+            string thirst, 
+            string second, 
+            string delimiter = " ")
         {
             int number;
             
             bool result = Int32.TryParse(second, out number);
             if (result)
             {
-                return " " + thirst + second;
+                return " " + thirst + delimiter + second;
             }
             return "";
 

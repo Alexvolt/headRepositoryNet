@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HeadRepositoryNet.Models
 {
+    [Table("Users")]
     public class User
     {
         [Key]
@@ -18,7 +19,7 @@ namespace HeadRepositoryNet.Models
         [JsonIgnore]
         public string Password { get ; set; }
 
-        [JsonProperty("Password")]
+        [JsonProperty("password")]
         private string PasswordAlternateSetter
         {
             set { Password = value; }

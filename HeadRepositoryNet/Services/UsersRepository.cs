@@ -76,8 +76,7 @@ namespace HeadRepositoryNet.Services
             }
             else
             {
-                Password pass = new Password(userParam.Password);
-                userParam.Password = pass.HashFull;
+                userParam.Password = BCrypt.Net.BCrypt.HashPassword(userParam.Password);
                 // not exists - can create
                 using (IDbConnection dbConnection = Connection)
                 {
@@ -86,6 +85,7 @@ namespace HeadRepositoryNet.Services
                     var existUser = existUsers.FirstOrDefault();
                     bool admin = userParam.Admin || existUser == null;
                     userParam.Admin = admin;
+                    userParam.HaveAccess = userParam.HaveAccess || existUser == null;;
                     await dbConnection.InsertAsync<User>(userParam);
                 }
             }            
@@ -104,7 +104,7 @@ namespace HeadRepositoryNet.Services
             using (IDbConnection dbConnection = Connection)
             {
                 dbConnection.Open();
-                string addUpdate = isAdmin ? ", Admin = @Admin, HaveAccess = @HaveAccess" : "";
+                string addUpdate = isAdmin ? ", \"Admin\" = @Admin, \"HaveAccess\" = @HaveAccess" : "";
                 var count = await dbConnection.ExecuteAsync($"update \"Users\" set \"Username\" = @Username, \"FirstName\" = @FirstName, \"LastName\" = @LastName, \"Email\" = @Email {addUpdate} where \"Id\" = @Id", user);
             }
         }
@@ -114,8 +114,7 @@ namespace HeadRepositoryNet.Services
             using (IDbConnection dbConnection = Connection)
             {
                 dbConnection.Open();
-                Password pass = new Password(password);
-                var count = await dbConnection.ExecuteAsync($"update \"Users\" set \"Password\" = @Password where \"Id\" = @Id", new { Id = id , Password = pass.HashFull});
+                var count = await dbConnection.ExecuteAsync($"update \"Users\" set \"Password\" = @Password where \"Id\" = @Id", new { Id = id , Password = BCrypt.Net.BCrypt.HashPassword(password)});
             }
         }
 

@@ -13,6 +13,7 @@ using Dapper.FastCrud;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IO;
+using HeadRepositoryNet.Services;
 
 namespace HeadRepositoryNet
 {
@@ -59,6 +60,19 @@ namespace HeadRepositoryNet
                         };
                     });
 
+            //services.UseMiddleware<ExceptionMiddleware>();
+            
+            /*services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder => builder.WithOrigins("http://localhost:37885")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());//builder.WithOrigins("http://localhost:4200"));
+            });*/
+            services.AddCors();
+
+
             services.AddMvc();
         }
 
@@ -71,6 +85,12 @@ namespace HeadRepositoryNet
             {
                 app.UseDeveloperExceptionPage(); 
             }*/
+            //app.UseCors("AllowSpecificOrigin");
+            app.UseCors(builder =>
+                builder.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
+
             app.UseAuthentication();
 
             app.UseMvc();

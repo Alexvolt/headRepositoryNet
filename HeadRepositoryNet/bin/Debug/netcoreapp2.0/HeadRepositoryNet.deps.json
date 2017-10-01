@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "3316441d802794df8bf64da9811ccc33a02b23df"
+    "signature": "190beb0947a441d7474924628859f8fdfbf9199d"
   },
   "compilationOptions": {
     "defines": [
@@ -23,6 +23,7 @@
     ".NETCoreApp,Version=v2.0": {
       "HeadRepositoryNet/1.0.0": {
         "dependencies": {
+          "BCrypt.Net-Core": "1.4.0",
           "Dapper": "1.50.2",
           "Dapper.FastCrud": "2.4.1",
           "Microsoft.AspNetCore.All": "2.0.0",
@@ -34,6 +35,18 @@
         },
         "compile": {
           "HeadRepositoryNet.dll": {}
+        }
+      },
+      "BCrypt.Net-Core/1.4.0": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.0",
+          "System.Runtime.Extensions": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/BCrypt.Net-Core.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.3/BCrypt.Net-Core.dll": {}
         }
       },
       "Dapper/1.50.2": {
@@ -4046,6 +4059,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "BCrypt.Net-Core/1.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-61fIfobQh+o1vsoLTY6abM2UnyFLGAXJSqLYAwlNMfC3445kDD57AqLrJIAOFcHsgn+T3i8tbCP0ugK5btA6Uw==",
+      "path": "bcrypt.net-core/1.4.0",
+      "hashPath": "bcrypt.net-core.1.4.0.nupkg.sha512"
     },
     "Dapper/1.50.2": {
       "type": "package",

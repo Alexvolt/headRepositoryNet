@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.0": {
+      "BCrypt.Net-Core/1.4.0": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "System.Runtime.Extensions": "4.1.0"
+        },
+        "compile": {
+          "lib/netstandard1.3/BCrypt.Net-Core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.3/BCrypt.Net-Core.dll": {}
+        }
+      },
       "Dapper/1.50.2": {
         "type": "package",
         "dependencies": {
@@ -4826,6 +4839,20 @@
     }
   },
   "libraries": {
+    "BCrypt.Net-Core/1.4.0": {
+      "sha512": "61fIfobQh+o1vsoLTY6abM2UnyFLGAXJSqLYAwlNMfC3445kDD57AqLrJIAOFcHsgn+T3i8tbCP0ugK5btA6Uw==",
+      "type": "package",
+      "path": "bcrypt.net-core/1.4.0",
+      "files": [
+        "bcrypt.net-core.1.4.0.nupkg.sha512",
+        "bcrypt.net-core.nuspec",
+        "lib/net40/BCrypt.Net-Core.dll",
+        "lib/net45/BCrypt.Net-Core.dll",
+        "lib/net451/BCrypt.Net-Core.dll",
+        "lib/net452/BCrypt.Net-Core.dll",
+        "lib/netstandard1.3/BCrypt.Net-Core.dll"
+      ]
+    },
     "Dapper/1.50.2": {
       "sha512": "6VcCiiOxVhgMwgMCuQuaff8I5IyDamrzeOjuUH1iMExh8R5TJqwkVCpwdVJGQdwSCqWsQA/PerrrK7T6mONthQ==",
       "type": "package",
@@ -12702,6 +12729,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.0": [
+      "BCrypt.Net-Core >= 1.4.0",
       "Dapper >= 1.50.2",
       "Dapper.FastCrud >= 2.4.1",
       "Microsoft.AspNetCore.All >= 2.0.0",
@@ -12710,33 +12738,28 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\aeg2.MSC\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "/home/sasha/.nuget/packages/": {},
+    "/usr/share/dotnet/sdk/NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
-    "restoreSettings": {
-      "hideWarningsAndErrors": true
-    },
     "restore": {
-      "projectUniqueName": "D:\\web\\headRepository\\HeadRepositoryNet\\HeadRepositoryNet\\HeadRepositoryNet.csproj",
+      "projectUniqueName": "/home/sasha/prog/projects/head/headRepositoryNet/HeadRepositoryNet/HeadRepositoryNet.csproj",
       "projectName": "HeadRepositoryNet",
-      "projectPath": "D:\\web\\headRepository\\HeadRepositoryNet\\HeadRepositoryNet\\HeadRepositoryNet.csproj",
-      "packagesPath": "C:\\Users\\aeg2.MSC\\.nuget\\packages\\",
-      "outputPath": "D:\\web\\headRepository\\HeadRepositoryNet\\HeadRepositoryNet\\obj\\",
+      "projectPath": "/home/sasha/prog/projects/head/headRepositoryNet/HeadRepositoryNet/HeadRepositoryNet.csproj",
+      "packagesPath": "/home/sasha/.nuget/packages/",
+      "outputPath": "/home/sasha/prog/projects/head/headRepositoryNet/HeadRepositoryNet/obj/",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "/usr/share/dotnet/sdk/NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\aeg2.MSC\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/home/sasha/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -12753,26 +12776,30 @@
     "frameworks": {
       "netcoreapp2.0": {
         "dependencies": {
-          "Dapper": {
-            "target": "Package",
-            "version": "1.50.2"
-          },
-          "Npgsql": {
-            "target": "Package",
-            "version": "3.2.5"
-          },
-          "Dapper.FastCrud": {
-            "target": "Package",
-            "version": "2.4.1"
-          },
           "Microsoft.NETCore.App": {
             "target": "Package",
             "version": "2.0.0",
             "autoReferenced": true
           },
+          "BCrypt.Net-Core": {
+            "target": "Package",
+            "version": "1.4.0"
+          },
+          "Dapper": {
+            "target": "Package",
+            "version": "1.50.2"
+          },
+          "Dapper.FastCrud": {
+            "target": "Package",
+            "version": "2.4.1"
+          },
           "Microsoft.AspNetCore.All": {
             "target": "Package",
             "version": "2.0.0"
+          },
+          "Npgsql": {
+            "target": "Package",
+            "version": "3.2.5"
           }
         },
         "imports": [
