@@ -31,13 +31,14 @@ namespace HeadRepositoryNet.Controllers
 
         //post api/users/authenticate
         [HttpPost("authenticate")]
-        public async Task Authenticate([FromBody] UserPass userPass)
+        public async Task<IActionResult> Authenticate([FromBody] UserPass userPass)
         {
             if (userPass.Password == null || userPass.Username == null)
             {
-                Response.StatusCode = 400;
-                await Response.WriteAsync("invalid input data");
-                return;
+                return BadRequest();
+                //Response.StatusCode = 400;
+                //await Response.WriteAsync("invalid input data");
+                //return;
             }
 
             try
@@ -46,15 +47,17 @@ namespace HeadRepositoryNet.Controllers
                 AuthResponse responseData = await authenticateService.Authenticate(userPass);
 
                 // сериализация ответа
-                Response.ContentType = "application/json";
-                await Response.WriteAsync(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings { Formatting = Formatting.Indented }));
-                
+                return Ok(responseData);
+                //Response.ContentType = "application/json";
+                //await Response.WriteAsync(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings { Formatting = Formatting.Indented }));
+                //return Ok(new { ""});                
             }
             catch (System.Exception  err)
             {
-                    Response.StatusCode = 403;
-                    await Response.WriteAsync(err.Message);
-                    return;
+                return StatusCode(403, err.Message);
+                //Response.StatusCode = 403;
+                //await Response.WriteAsync(err.Message);
+                //return;
             }
         }
 
