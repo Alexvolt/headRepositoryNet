@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Configuration;
 using HeadRepositoryNet.Entities;
 using HeadRepositoryNet.Services;
 using HeadRepositoryNet.Models;
 using Microsoft.AspNetCore.Http;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using HeadRepositoryNet.Helpers;
 using Microsoft.AspNetCore.Authorization;
 
@@ -36,9 +31,6 @@ namespace HeadRepositoryNet.Controllers
             if (userPass.Password == null || userPass.Username == null)
             {
                 return BadRequest();
-                //Response.StatusCode = 400;
-                //await Response.WriteAsync("invalid input data");
-                //return;
             }
 
             try
@@ -48,16 +40,10 @@ namespace HeadRepositoryNet.Controllers
 
                 // сериализация ответа
                 return Ok(responseData);
-                //Response.ContentType = "application/json";
-                //await Response.WriteAsync(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings { Formatting = Formatting.Indented }));
-                //return Ok(new { ""});                
-            }
+             }
             catch (System.Exception  err)
             {
                 return StatusCode(403, err.Message);
-                //Response.StatusCode = 403;
-                //await Response.WriteAsync(err.Message);
-                //return;
             }
         }
 
