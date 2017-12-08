@@ -8,7 +8,7 @@ CREATE SEQUENCE public.ProfessionalAreas_id_seq
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.ProfessionalAreas_id_seq
+ALTER SEQUENCE public.ProfessionalAreas_id_seq
   OWNER TO postgres;
 
 -- Table: public."ProfessionalAreas"
